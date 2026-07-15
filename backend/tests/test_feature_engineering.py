@@ -10,10 +10,6 @@ print(f"Number of rows: {len(features_df)}")
 print(f"Columns: {list(features_df.columns)}")
 print(features_df.head(10))
 
-# -------------------------
-# RSI Validation
-# -------------------------
-
 rsi = features_df["RSI14"]
 rsi_valid = rsi.dropna()
 
@@ -26,26 +22,12 @@ print(f"Maximum RSI value: {rsi_valid.max()}")
 print(f"Number of NaN values in RSI14: {rsi.isna().sum()}")
 
 if not rsi_valid.between(0, 100).all():
-    raise ValueError(
-        "RSI14 contains values outside the valid range of 0 to 100."
-    )
+    raise ValueError("RSI14 contains values outside the valid range of 0 to 100.")
 
-# -------------------------
-# MACD Validation
-# -------------------------
-
-expected_columns = {
-    "MACD",
-    "MACD_Signal",
-    "MACD_Histogram",
-}
-
-missing_columns = expected_columns - set(features_df.columns)
-
-if missing_columns:
-    raise ValueError(
-        f"Missing expected MACD column(s): {sorted(missing_columns)}"
-    )
+macd_columns = ["MACD", "MACD_Signal", "MACD_Histogram"]
+for column in macd_columns:
+    if column not in features_df.columns:
+        raise ValueError(f"Expected column '{column}' is missing from features_df.")
 
 macd = features_df["MACD"]
 macd_signal = features_df["MACD_Signal"]
@@ -54,10 +36,8 @@ macd_histogram = features_df["MACD_Histogram"]
 print("MACD Summary:")
 print(f"Minimum MACD: {macd.min()}")
 print(f"Maximum MACD: {macd.max()}")
-
 print(f"Minimum Signal: {macd_signal.min()}")
 print(f"Maximum Signal: {macd_signal.max()}")
-
 print(f"Minimum Histogram: {macd_histogram.min()}")
 print(f"Maximum Histogram: {macd_histogram.max()}")
 
@@ -70,9 +50,21 @@ macd_series = {
     "MACD_Signal": macd_signal,
     "MACD_Histogram": macd_histogram,
 }
-
 for column_name, column in macd_series.items():
     if column.isna().all():
         raise ValueError(
             f"Column '{column_name}' consists entirely of NaN values."
         )
+
+if "ATR14" not in features_df.columns:
+    raise ValueError("Expected column 'ATR14' is missing from features_df.")
+
+atr = features_df["ATR14"]
+
+print("ATR Summary:")
+print(f"Minimum ATR: {atr.min()}")
+print(f"Maximum ATR: {atr.max()}")
+print(f"ATR NaN count: {atr.isna().sum()}")
+
+if atr.isna().all():
+    raise ValueError("Column 'ATR14' consists entirely of NaN values.")

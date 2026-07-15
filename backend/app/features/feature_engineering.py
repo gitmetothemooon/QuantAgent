@@ -19,7 +19,10 @@ This module does NOT:
 It assumes the input DataFrame has already passed through
 :func:`backend.app.data.validate_data.validate_stock_data` and therefore
 contains, at minimum, a ``Close`` column with no missing values.
-
+MACD
+MACD Signal
+MACD Histogram
+ATR14
 Only pandas is used; no external technical-analysis libraries
 (e.g. TA-Lib, pandas-ta) are required or permitted.
 """
@@ -39,6 +42,7 @@ from backend.app.features.momentum import (
     calculate_rsi,
     calculate_macd,
 )
+from backend.app.features.volatility import ATR_PERIOD, calculate_atr
 
 
 def generate_features(df: pd.DataFrame) -> pd.DataFrame:
@@ -96,5 +100,12 @@ def generate_features(df: pd.DataFrame) -> pd.DataFrame:
     features_df["MACD"] = macd_line
     features_df["MACD_Signal"] = signal_line
     features_df["MACD_Histogram"] = histogram
+
+    features_df["ATR14"] = calculate_atr(
+        features_df["High"],
+        features_df["Low"],
+        features_df["Close"],
+        period=ATR_PERIOD,
+    )
 
     return features_df

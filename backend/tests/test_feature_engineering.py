@@ -68,3 +68,35 @@ print(f"ATR NaN count: {atr.isna().sum()}")
 
 if atr.isna().all():
     raise ValueError("Column 'ATR14' consists entirely of NaN values.")
+
+bb_columns = ["BB_Middle", "BB_Upper", "BB_Lower"]
+for column in bb_columns:
+    if column not in features_df.columns:
+        raise ValueError(f"Expected column '{column}' is missing from features_df.")
+
+bb_middle = features_df["BB_Middle"]
+bb_upper = features_df["BB_Upper"]
+bb_lower = features_df["BB_Lower"]
+
+print("Bollinger Bands Summary:")
+print(f"Minimum BB_Middle: {bb_middle.min()}")
+print(f"Maximum BB_Middle: {bb_middle.max()}")
+print(f"Minimum BB_Upper: {bb_upper.min()}")
+print(f"Maximum BB_Upper: {bb_upper.max()}")
+print(f"Minimum BB_Lower: {bb_lower.min()}")
+print(f"Maximum BB_Lower: {bb_lower.max()}")
+
+print(f"BB_Middle NaN count: {bb_middle.isna().sum()}")
+print(f"BB_Upper NaN count: {bb_upper.isna().sum()}")
+print(f"BB_Lower NaN count: {bb_lower.isna().sum()}")
+
+bb_series = {
+    "BB_Middle": bb_middle,
+    "BB_Upper": bb_upper,
+    "BB_Lower": bb_lower,
+}
+for column_name, column in bb_series.items():
+    if column.isna().all():
+        raise ValueError(
+            f"Column '{column_name}' consists entirely of NaN values."
+        )

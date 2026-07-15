@@ -2,12 +2,13 @@
 
 This module is responsible for a single task: orchestrating the
 generation of technical indicator columns (simple moving averages,
-exponential moving averages, ``Daily_Return_Pct``, and ``RSI14``) from
-an already-validated OHLCV pandas DataFrame. The actual indicator
-calculations live in dedicated modules:
+exponential moving averages, ``Daily_Return_Pct``, RSI, MACD, ATR, and
+Bollinger Bands) from an already-validated OHLCV pandas DataFrame. The
+actual indicator calculations live in dedicated modules:
 
     - :mod:`backend.app.features.trend`: SMA and EMA
-    - :mod:`backend.app.features.momentum`: RSI
+    - :mod:`backend.app.features.momentum`: RSI and MACD
+    - :mod:`backend.app.features.volatility`: ATR and Bollinger Bands
 
 This module does NOT:
     - download data
@@ -19,10 +20,7 @@ This module does NOT:
 It assumes the input DataFrame has already passed through
 :func:`backend.app.data.validate_data.validate_stock_data` and therefore
 contains, at minimum, a ``Close`` column with no missing values.
-MACD
-MACD Signal
-MACD Histogram
-ATR14
+
 Only pandas is used; no external technical-analysis libraries
 (e.g. TA-Lib, pandas-ta) are required or permitted.
 """
@@ -42,7 +40,11 @@ from backend.app.features.momentum import (
     calculate_rsi,
     calculate_macd,
 )
-from backend.app.features.volatility import ATR_PERIOD, calculate_atr
+from backend.app.features.volatility import (
+    ATR_PERIOD,
+    calculate_atr,
+    calculate_bollinger_bands,
+)
 
 
 def generate_features(df: pd.DataFrame) -> pd.DataFrame:
@@ -59,8 +61,18 @@ def generate_features(df: pd.DataFrame) -> pd.DataFrame:
     - ``EMA50``: 50-period exponential moving average of ``Close``.
     - ``Daily_Return_Pct``: Percentage change of ``Close`` from the
       previous row.
-    - ``RSI14``: 14-period Relative Strength Index of ``Close``, using
-      Wilder's smoothing method.
+    - ``RSI14``: 14-period Relative Strength Index.
+    - ``MACD``: Moving Average Convergence Divergence line.
+    - ``MACD_Signal``: Exponential moving average of the MACD line.
+    - ``MACD_Histogram``: Difference between the MACD line and its
+      signal line.
+    - ``ATR14``: 14-period Average True Range.
+    - ``BB_Middle``: 20-period simple moving average used as the
+      Bollinger middle band.
+    - ``BB_Upper``: Upper Bollinger Band (middle band + two standard
+      deviations).
+    - ``BB_Lower``: Lower Bollinger Band (middle band minus two standard
+  deviations).
 
     Args:
         df: A validated pandas DataFrame containing historical OHLCV
@@ -69,7 +81,8 @@ def generate_features(df: pd.DataFrame) -> pd.DataFrame:
     Returns:
         A new pandas DataFrame containing all original columns plus
         ``SMA20``, ``SMA50``, ``EMA20``, ``EMA50``, ``Daily_Return_Pct``,
-        and ``RSI14``.
+        ``RSI14``, ``MACD``, ``MACD_Signal``, ``MACD_Histogram``,
+        ``ATR14``, ``BB_Middle``, ``BB_Upper``, and ``BB_Lower``.
 
     Raises:
         ValueError: If the input DataFrame does not contain a
@@ -107,5 +120,12 @@ def generate_features(df: pd.DataFrame) -> pd.DataFrame:
         features_df["Close"],
         period=ATR_PERIOD,
     )
+
+    bb_middle, bb_upper, bb_lower = calculate_bollinger_bands(
+        features_df["Close"],
+    )
+    features_df["BB_Middle"] = bb_middle
+    features_df["BB_Upper"] = bb_upper
+    features_df["BB_Lower"] = bb_lower
 
     return features_df

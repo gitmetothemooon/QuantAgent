@@ -1,8 +1,8 @@
 """Momentum technical indicators for OHLCV price data.
 
 This module is responsible for a single task: calculating momentum
-indicators (the Relative Strength Index) from a pandas Series of
-closing prices.
+indicators (the Relative Strength Index and MACD) from a pandas Series
+of closing prices.
 
 This module does NOT:
     - operate on DataFrames
@@ -17,6 +17,9 @@ Only pandas is used; no external technical-analysis libraries
 import pandas as pd
 
 RSI_PERIOD: int = 14
+MACD_FAST_PERIOD: int = 12
+MACD_SLOW_PERIOD: int = 26
+MACD_SIGNAL_PERIOD: int = 9
 
 
 def calculate_rsi(close: pd.Series, period: int = RSI_PERIOD) -> pd.Series:
@@ -59,3 +62,49 @@ def calculate_rsi(close: pd.Series, period: int = RSI_PERIOD) -> pd.Series:
     rsi = rsi.mask(avg_gain == 0, 0.0)
 
     return rsi
+
+
+def calculate_macd(
+    close: pd.Series,
+    fast_period: int = MACD_FAST_PERIOD,
+    slow_period: int = MACD_SLOW_PERIOD,
+    signal_period: int = MACD_SIGNAL_PERIOD,
+) -> tuple[pd.Series, pd.Series, pd.Series]:
+    """Calculate the Moving Average Convergence Divergence (MACD).
+
+    MACD measures momentum and trend direction by comparing a fast and
+    a slow exponential moving average of price. When the fast EMA is
+    above the slow EMA, momentum is considered bullish; when it is
+    below, momentum is considered bearish. The signal line is a
+    smoothed version of the MACD line itself, and the histogram shows
+    the gap between the two, which is often used to spot momentum
+    shifts before they show up in the MACD line crossing the signal
+    line.
+
+    Args:
+        close: A pandas Series of closing prices.
+        fast_period: The span of the fast EMA (standard MACD uses 12).
+        slow_period: The span of the slow EMA (standard MACD uses 26).
+        signal_period: The span of the EMA applied to the MACD line to
+            produce the signal line (standard MACD uses 9).
+
+    Returns:
+        A tuple of three pandas Series, each aligned to the input
+        index, in the following order:
+
+        - ``macd_line``: The difference between the fast and slow EMA
+          of ``close``, representing raw momentum.
+        - ``signal_line``: An EMA of ``macd_line``, used as a trigger
+          line for identifying momentum shifts.
+        - ``histogram``: The difference between ``macd_line`` and
+          ``signal_line``, representing the strength of the current
+          momentum shift.
+    """
+    ema_fast = close.ewm(span=fast_period, adjust=False).mean()
+    ema_slow = close.ewm(span=slow_period, adjust=False).mean()
+
+    macd_line = ema_fast - ema_slow
+    signal_line = macd_line.ewm(span=signal_period, adjust=False).mean()
+    histogram = macd_line - signal_line
+
+    return macd_line, signal_line, histogram

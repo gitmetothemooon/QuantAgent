@@ -34,7 +34,11 @@ from backend.app.features.trend import (
     calculate_ema,
     calculate_sma,
 )
-from backend.app.features.momentum import RSI_PERIOD, calculate_rsi
+from backend.app.features.momentum import (
+    RSI_PERIOD,
+    calculate_rsi,
+    calculate_macd,
+)
 
 
 def generate_features(df: pd.DataFrame) -> pd.DataFrame:
@@ -80,6 +84,17 @@ def generate_features(df: pd.DataFrame) -> pd.DataFrame:
 
     features_df["Daily_Return_Pct"] = features_df["Close"].pct_change() * 100
 
-    features_df["RSI14"] = calculate_rsi(features_df["Close"], period=RSI_PERIOD)
+    features_df["RSI14"] = calculate_rsi(
+        features_df["Close"],
+        period=RSI_PERIOD,
+    )
+
+    macd_line, signal_line, histogram = calculate_macd(
+        features_df["Close"]
+    )
+
+    features_df["MACD"] = macd_line
+    features_df["MACD_Signal"] = signal_line
+    features_df["MACD_Histogram"] = histogram
 
     return features_df

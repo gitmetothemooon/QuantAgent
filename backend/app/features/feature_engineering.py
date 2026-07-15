@@ -45,6 +45,7 @@ from backend.app.features.volatility import (
     calculate_atr,
     calculate_bollinger_bands,
 )
+from backend.app.features.volume import calculate_obv
 
 
 def generate_features(df: pd.DataFrame) -> pd.DataFrame:
@@ -71,8 +72,8 @@ def generate_features(df: pd.DataFrame) -> pd.DataFrame:
       Bollinger middle band.
     - ``BB_Upper``: Upper Bollinger Band (middle band + two standard
       deviations).
-    - ``BB_Lower``: Lower Bollinger Band (middle band minus two standard
-  deviations).
+    - ``BB_Lower``: Lower Bollinger Band (middle band \u2212 two standard
+      deviations).
 
     Args:
         df: A validated pandas DataFrame containing historical OHLCV
@@ -127,5 +128,10 @@ def generate_features(df: pd.DataFrame) -> pd.DataFrame:
     features_df["BB_Middle"] = bb_middle
     features_df["BB_Upper"] = bb_upper
     features_df["BB_Lower"] = bb_lower
+
+    features_df["OBV"] = calculate_obv(
+        features_df["Close"],
+        features_df["Volume"],
+    )
 
     return features_df

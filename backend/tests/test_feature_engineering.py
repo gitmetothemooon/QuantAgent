@@ -100,3 +100,16 @@ for column_name, column in bb_series.items():
         raise ValueError(
             f"Column '{column_name}' consists entirely of NaN values."
         )
+
+if "OBV" not in features_df.columns:
+    raise ValueError("Expected column 'OBV' is missing from features_df.")
+
+obv = features_df["OBV"]
+
+print("OBV Summary:")
+print(f"Minimum OBV: {obv.min()}")
+print(f"Maximum OBV: {obv.max()}")
+print(f"OBV NaN count: {obv.isna().sum()}")
+
+if obv.isna().all():
+    raise ValueError("Column 'OBV' consists  entirely of NaN values.")

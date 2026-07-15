@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-from backend.app.validate_data import validate_stock_data
+from backend.app.data.validate_data import validate_stock_data
 df = pd.read_csv("data/raw/RELIANCE.csv")
 validated_df = validate_stock_data(df)
 

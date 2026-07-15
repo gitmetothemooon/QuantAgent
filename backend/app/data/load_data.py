@@ -2,7 +2,7 @@
 
 This module is responsible for a single task: locating the raw CSV file
 for a given stock symbol, reading it into a pandas DataFrame, and
-validating it via :func:`backend.app.validate_data.validate_stock_data`.
+validating it via :func:`backend.app.data.validate_data.validate_stock_data`.
 
 It does not download data, calculate indicators, modify prices, perform
 feature engineering, or save files.
@@ -12,11 +12,15 @@ from pathlib import Path
 
 import pandas as pd
 
-from backend.app.validate_data import validate_stock_data
+from backend.app.data.validate_data import validate_stock_data
 
-# Project root, resolved the same way as in download_data.py:
-# backend/app/load_data.py -> backend/app -> backend -> <project root>
-PROJECT_ROOT: Path = Path(__file__).resolve().parents[2]
+# Project root:
+# backend/app/data/load_data.py
+#        ↑ data
+#        ↑ app
+#        ↑ backend
+#        ↑ QuantAgent
+PROJECT_ROOT: Path = Path(__file__).resolve().parents[3]
 
 
 def load_stock_data(symbol: str) -> pd.DataFrame:

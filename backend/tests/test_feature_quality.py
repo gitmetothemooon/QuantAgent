@@ -1,9 +1,8 @@
 """Temporary manual check for feature_quality.prepare_features() on RELIANCE data."""
 
-from backend.app.load_data import load_stock_data
-from backend.app.feature_engineering import generate_features
-from backend.app.feature_quality import prepare_features
-
+from backend.app.data.load_data import load_stock_data
+from backend.app.features.feature_engineering import generate_features
+from backend.app.features.feature_quality import prepare_features
 raw_df = load_stock_data("RELIANCE")
 features_df = generate_features(raw_df)
 cleaned_df = prepare_features(features_df)
